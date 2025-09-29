@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProfessionalFinder from './ProfessionalFinder.jsx'; 
 import SignIn from './pages/SignIn.jsx'; 
 import Header from './components/Header.jsx'; 
+import JoinProfessional from './pages/JoinProfessional.jsx'; // 👈 NEW IMPORT
 import './index.css'; 
 
 // IMPORTANT: Define the base path for React Router
@@ -25,6 +26,9 @@ function App() {
           
           {/* Sign-in page */}
           <Route path="/signin" element={<SignIn />} /> 
+
+          {/* 👈 NEW ROUTE FOR PROFESSIONAL SIGNUP */}
+          <Route path="/join" element={<JoinProfessional />} /> 
         </Routes>
       </div>
     </BrowserRouter>
