@@ -1,0 +1,11 @@
+// src/data.js
+export const professionalsData = [
+  { id: 1, name: "Alex Johnson", profession: "Plumber", rating: 4.8, rate: 75, desc: "Certified and insured plumber with 10+ years experience in residential repairs.", image: "https://images.unsplash.com/photo-1549045337-ee4795e1e5e6?w=400&auto=format&fit=crop" },
+  { id: 2, name: "Maria Garcia", profession: "Web Developer", rating: 4.5, rate: 60, desc: "Specializes in React, modern front-end frameworks, and responsive design.", image: "https://images.unsplash.com/photo-1542831371-29b0f74f9d91?w=400&auto=format&fit=crop" },
+  { id: 3, name: "David Chen", profession: "Electrician", rating: 4.9, rate: 85, desc: "Licensed master electrician for commercial and residential wiring and fixes.", image: "https://images.unsplash.com/photo-1581092651631-f12745300b65?w=400&auto=format&fit=crop" },
+  { id: 4, name: "Sarah Lee", profession: "Photographer", rating: 4.6, rate: 50, desc: "Experienced in wedding, portrait, and commercial photography with fast turnaround.", image: "https://images.unsplash.com/photo-1502982899975-ad9924921357?w=400&auto=format&fit=crop" },
+  { id: 5, name: "Mark Velez", profession: "Plumber", rating: 4.1, rate: 65, desc: "Expert in leak detection and bathroom remodels. Reliable and clean service.", image: "https://images.unsplash.com/photo-1563854898150-1372d89b1418?w=400&auto=format&fit=crop" },
+  { id: 6, name: "Emily White", profession: "Web Developer", rating: 4.7, rate: 70, desc: "Full-stack developer with expertise in Node.js and MongoDB.", image: "https://images.unsplash.com/photo-1504868584819-5991c0157404?w=400&auto=format&fit=crop" },
+  { id: 7, name: "Joe Smith", profession: "Electrician", rating: 4.3, rate: 60, desc: "Residential electrical panel upgrades and smart home installations.", image: "https://images.unsplash.com/photo-1582234057973-19e48f1f7d1a?w=400&auto=format&fit=crop" },
+  { id: 8, name: "Anna Bell", profession: "Photographer", rating: 5.0, rate: 90, desc: "Highly rated commercial photographer specializing in product and brand imagery.", image: "https://images.unsplash.com/photo-1510100764720-6d45903b41e8?w=400&auto=format&fit=crop" },
+];
