@@ -65,10 +65,10 @@ body {
 }
 .professional-card {
     background-color: white;
-    padding: 0; /* Remove padding from card itself to include image */
+    padding: 0; 
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* Important for the image */
+    overflow: hidden; 
     transition: transform 0.2s;
 }
 .professional-card:hover {
@@ -93,7 +93,7 @@ body {
     margin-bottom: 10px;
 }
 .hire-btn {
-    background-color: #ffc107; /* Yellow/Gold */
+    background-color: #ffc107; 
     color: #333;
     padding: 10px;
     border: none;
@@ -108,7 +108,7 @@ body {
 .signin-page-container {
     padding-top: 80px;
     background-color: #f4f4f9;
-    min-height: calc(100vh - 80px); /* Fill the screen minus header height */
+    min-height: calc(100vh - 80px); 
     display: flex;
     justify-content: center;
 }
