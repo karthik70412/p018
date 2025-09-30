@@ -17,7 +17,7 @@ const JoinProfessional = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        // Clear errors for the field as the user types
+        // Clear errors for the specific field as the user types
         setErrors({ ...errors, [e.target.name]: null }); 
     };
 
@@ -35,7 +35,7 @@ const JoinProfessional = () => {
         }
         const rate = parseInt(formData.rate);
         if (isNaN(rate) || rate <= 0) {
-            currentErrors.rate = "Hourly Rate must be a positive number.";
+            currentErrors.rate = "Hourly Rate must be a positive number (₹).";
         }
         if (formData.desc.length < 20) {
             currentErrors.desc = "Description must be at least 20 characters.";
@@ -48,26 +48,30 @@ const JoinProfessional = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
+        // 1. Run full validation check
         if (!runValidation()) {
-            alert("Please fix the validation errors before submitting.");
+            alert("Please fix all validation errors before submitting your application.");
             return;
         }
         
         setIsLoading(true);
 
         setTimeout(() => { // Simulate network delay
-            // 1. Create the new professional object
+            // 2. Create the new professional object
             const newProfessional = {
                 id: Date.now(), 
                 name: formData.name,
                 profession: formData.profession,
                 rate: parseInt(formData.rate), 
                 desc: formData.desc,
-                rating: 5.0, 
+                rating: 5.0, // Default rating for new professional
                 image: "https://images.unsplash.com/photo-1520607162513-7740e53a2c57?w=400&auto=format&fit=crop", 
+                skills: [], // New professionals start with no skills
+                location: "Unspecified", // New professionals start with an unspecified location
+                isVerified: false, // New professionals need to be verified
             };
 
-            // 2. Save the updated list to localStorage
+            // 3. Save the updated list to localStorage
             const existingData = localStorage.getItem('newProfessionals');
             const existingProfessionals = existingData ? JSON.parse(existingData) : [];
             existingProfessionals.push(newProfessional);
@@ -77,6 +81,7 @@ const JoinProfessional = () => {
             
             alert(`Success! ${newProfessional.name} (${newProfessional.profession}) is now listed on the platform and available for hire!`);
             
+            // Navigate and refresh to show the newly added professional immediately
             navigate('/');
             window.location.reload(); 
         }, 1000);
@@ -84,7 +89,7 @@ const JoinProfessional = () => {
 
     const inputStyle = { 
         padding: '12px', border: '1px solid', borderRadius: '5px', marginBottom: '5px', 
-        borderColor: '#ccc', width: '100%', boxSizing: 'border-box'
+        width: '100%', boxSizing: 'border-box'
     };
     
     // Determine if the submit button should be disabled
@@ -98,13 +103,13 @@ const JoinProfessional = () => {
                 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     
-                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.name ? 'red' : '#ccc' }} required />
+                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.name ? 'red' : '#ccc' }} />
                     {errors.name && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.name}</p>}
 
-                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.email ? 'red' : '#ccc' }} required />
+                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.email ? 'red' : '#ccc' }} />
                     {errors.email && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.email}</p>}
                     
-                    <select name="profession" value={formData.profession} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }} required>
+                    <select name="profession" value={formData.profession} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }}>
                         <option value="">Select Profession</option>
                         <option value="Plumber">Plumber</option>
                         <option value="Web Developer">Web Developer</option>
@@ -117,10 +122,10 @@ const JoinProfessional = () => {
                     </select>
                     {errors.profession && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.profession}</p>}
                     
-                    <input type="number" name="rate" placeholder="Hourly Rate (₹)" value={formData.rate} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.rate ? 'red' : '#ccc' }} required />
+                    <input type="number" name="rate" placeholder="Hourly Rate (₹)" value={formData.rate} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.rate ? 'red' : '#ccc' }} />
                     {errors.rate && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.rate}</p>}
 
-                    <textarea name="desc" placeholder="Brief Bio / Description" value={formData.desc} onChange={handleChange} rows="4" style={{ ...inputStyle, borderColor: errors.desc ? 'red' : '#ccc' }} required></textarea>
+                    <textarea name="desc" placeholder="Brief Bio / Description (Min 20 chars)" value={formData.desc} onChange={handleChange} rows="4" style={{ ...inputStyle, borderColor: errors.desc ? 'red' : '#ccc' }}></textarea>
                     {errors.desc && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.desc}</p>}
                     
                     <button 

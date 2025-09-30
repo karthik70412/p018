@@ -1,9 +1,12 @@
+// src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
+    // State to hold the logged-in user data
     const [currentUser, setCurrentUser] = useState(null);
 
+    // Check for user session when component mounts
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
@@ -12,10 +15,10 @@ const Header = () => {
     }, []);
 
     const handleSignOut = () => {
-        localStorage.removeItem('currentUser');
-        setCurrentUser(null); 
+        localStorage.removeItem('currentUser'); // Clear the session data
+        setCurrentUser(null); // Clear state
         alert("You have been signed out.");
-        window.location.reload(); 
+        window.location.reload(); // Force page reload to update UI
     };
 
     return (
@@ -25,7 +28,7 @@ const Header = () => {
             </Link>
             <div className="nav-links" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                 
-                {/* Link for Professional Registration */}
+                {/* Link for Professional Registration (Always visible utility link) */}
                 <Link 
                     to="/join" 
                     style={{ textDecoration: 'none', color: '#007bff', padding: '8px 0', fontWeight: 'bold' }}
@@ -34,9 +37,9 @@ const Header = () => {
                 </Link>
 
                 {currentUser && currentUser.isLoggedIn ? (
-                    // Display links when logged in
+                    // Display links and user profile when logged in
                     <>
-                        {/* 👈 BOOKING HISTORY LINK */}
+                        {/* Utility Links for Logged-In User */}
                         <Link 
                             to="/history" 
                             style={{ textDecoration: 'none', color: '#333', padding: '8px 0', fontWeight: 'bold' }}
@@ -44,7 +47,6 @@ const Header = () => {
                             <span title="Booking History">🕒 History</span>
                         </Link>
                         
-                        {/* Favorites Link */}
                         <Link 
                             to="/favorites" 
                             style={{ textDecoration: 'none', color: '#333', padding: '8px 0', fontWeight: 'bold' }}
@@ -52,7 +54,8 @@ const Header = () => {
                             ❤️ Favorites
                         </Link>
 
-                        <span style={{ fontWeight: 'bold', color: '#333' }}>
+                        {/* User Display and Sign Out Button */}
+                        <span style={{ fontWeight: 'bold', color: '#333', marginLeft: '10px' }}>
                             Hello, {currentUser.name.split(' ')[0]} 👋
                         </span>
                         <button 
@@ -64,7 +67,7 @@ const Header = () => {
                         </button>
                     </>
                 ) : (
-                    // Display Sign In / Register link
+                    // Display Sign In / Register link when logged out
                     <Link 
                         to="/signin" 
                         className="signin-btn"

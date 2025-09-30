@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { getAllProfessionals, availableCities } from './data.js';
 import PopularCategories from './components/PopularCategories.jsx'; 
 import { Link } from 'react-router-dom'; 
@@ -6,19 +6,21 @@ import StarRating from './components/StarRating.jsx';
 import useDebounce from './hooks/useDebounce.js';
 
 const ProfessionalFinder = () => {
+    // --- STATE MANAGEMENT ---
     const [allProfessionals] = useState(getAllProfessionals());
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProfession, setSelectedProfession] = useState('');
     const [sortByRating, setSortByRating] = useState(false);
     
+    // Filtering States
     const [locationTerm, setLocationTerm] = useState('');
     const [minRating, setMinRating] = useState('0');
     const [minRate, setMinRate] = useState('');
     const [maxRate, setMaxRate] = useState('');
     
-    // State to force re-render when favorites change
+    // Favorites State
     const [favoritesKey, setFavoritesKey] = useState(0); 
-    
+
     const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     // Get current user details and their favorites
@@ -33,12 +35,12 @@ const ProfessionalFinder = () => {
         if (!currentUser || !currentUser.email) return [];
         const key = `favorites_${currentUser.email}`;
         return JSON.parse(localStorage.getItem(key) || '[]');
-    }, [currentUser, favoritesKey]); // Re-calculates when favoritesKey changes
+    }, [currentUser, favoritesKey]);
 
     // --- FAVORITES HANDLER ---
     const handleFavoriteToggle = (e, proId) => {
-        e.preventDefault(); // Stop navigation to detail page
-        e.stopPropagation(); // Stop event bubbling
+        e.preventDefault(); 
+        e.stopPropagation(); 
 
         if (!currentUser || !currentUser.email) {
             alert("Please sign in to save favorites.");
@@ -49,11 +51,9 @@ const ProfessionalFinder = () => {
         let favorites = JSON.parse(localStorage.getItem(key) || '[]');
         
         if (favorites.includes(proId)) {
-            // Remove favorite
             favorites = favorites.filter(id => id !== proId);
             alert("Removed from favorites!");
         } else {
-            // Add favorite
             favorites.push(proId);
             alert("Added to favorites! View in My Favorites.");
         }
@@ -63,7 +63,8 @@ const ProfessionalFinder = () => {
         setFavoritesKey(prev => prev + 1); 
     };
 
-    // --- UTILITY HANDLERS (Unchanged) ---
+    // --- UTILITY HANDLERS ---
+    
     const handleClearFilters = () => {
         setSearchTerm('');
         setSelectedProfession('');
@@ -73,6 +74,7 @@ const ProfessionalFinder = () => {
         setMaxRate('');
         setSortByRating(false);
     };
+    
     const handleClearSearch = () => setSearchTerm('');
 
     // --- FILTERING LOGIC (useMemo) ---
@@ -83,7 +85,7 @@ const ProfessionalFinder = () => {
         const termLower = debouncedSearchTerm.toLowerCase();
         list = list.filter(p => {
             const matchesNamePro = p.name.toLowerCase().includes(termLower) || p.profession.toLowerCase().includes(termLower);
-            const matchesDescription = p.desc.toLowerCase().includes(termLower);
+            const matchesDescription = p.desc.toLowerCase().includes(termLower); 
             return matchesNamePro || matchesDescription;
         });
 
@@ -119,6 +121,7 @@ const ProfessionalFinder = () => {
     const locationSuggestions = useMemo(() => {
         if (locationTerm.length < 2) return []; 
         const termLower = locationTerm.toLowerCase();
+        // NOTE: setLocationSuggestions is not needed here as we return the array directly.
         return availableCities.filter(city => city.toLowerCase().includes(termLower)).slice(0, 5);
     }, [locationTerm]);
 
@@ -253,7 +256,7 @@ const ProfessionalFinder = () => {
                     filteredAndSortedProfessionals.map(p => (
                         <div key={p.id} className="professional-card" style={{ position: 'relative' }}>
                             
-                            {/* 👈 UPDATED FAVORITES ICON (SVG) */}
+                            {/* FAVORITES ICON */}
                             <button
                                 onClick={(e) => handleFavoriteToggle(e, p.id)}
                                 style={{
