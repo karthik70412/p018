@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { getAllProfessionals, availableCities } from './data.js';
+import { getAllProfessionals, availableCities } from './data.js'; // Fallback import
 import PopularCategories from './components/PopularCategories.jsx'; 
 import { Link } from 'react-router-dom'; 
 import StarRating from './components/StarRating.jsx'; 
@@ -7,7 +7,8 @@ import useDebounce from './hooks/useDebounce.js';
 
 const ProfessionalFinder = () => {
     // --- STATE MANAGEMENT ---
-    const [allProfessionals] = useState(getAllProfessionals());
+    // Initialize empty, we will populate this with API data or local data in useEffect
+    const [allProfessionals, setAllProfessionals] = useState([]); 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProfession, setSelectedProfession] = useState('');
     const [sortByRating, setSortByRating] = useState(false);
@@ -37,6 +38,29 @@ const ProfessionalFinder = () => {
         return JSON.parse(localStorage.getItem(key) || '[]');
     }, [currentUser, favoritesKey]);
 
+    // 🚀 API FETCH EFFECT: Fetch data from the running server or fallback to local data
+    useEffect(() => {
+        const fetchProfessionals = async () => {
+            try {
+                const res = await fetch('http://localhost:5000/api/professionals'); 
+                
+                if (!res.ok) {
+                    // If the API call fails, throw an error to trigger the catch block
+                    throw new Error(`HTTP error! Status: ${res.status}. Backend might be offline.`);
+                }
+                
+                const data = await res.json();
+                setAllProfessionals(data); 
+            } catch (err) {
+                // FALLBACK: If the API fails to connect, load data from the local data.js
+                console.error("API connection failed. Loading local mock data as fallback.", err);
+                const localData = getAllProfessionals();
+                setAllProfessionals(localData);
+            }
+        };
+        fetchProfessionals();
+    }, []); // Runs once on component mount
+
     // --- FAVORITES HANDLER ---
     const handleFavoriteToggle = (e, proId) => {
         e.preventDefault(); 
@@ -59,7 +83,6 @@ const ProfessionalFinder = () => {
         }
         localStorage.setItem(key, JSON.stringify(favorites));
         
-        // Force re-render of this component to update heart icon state
         setFavoritesKey(prev => prev + 1); 
     };
 
@@ -85,7 +108,7 @@ const ProfessionalFinder = () => {
         const termLower = debouncedSearchTerm.toLowerCase();
         list = list.filter(p => {
             const matchesNamePro = p.name.toLowerCase().includes(termLower) || p.profession.toLowerCase().includes(termLower);
-            const matchesDescription = p.desc.toLowerCase().includes(termLower); 
+            const matchesDescription = p.desc.toLowerCase().includes(termLower);
             return matchesNamePro || matchesDescription;
         });
 
@@ -121,7 +144,6 @@ const ProfessionalFinder = () => {
     const locationSuggestions = useMemo(() => {
         if (locationTerm.length < 2) return []; 
         const termLower = locationTerm.toLowerCase();
-        // NOTE: setLocationSuggestions is not needed here as we return the array directly.
         return availableCities.filter(city => city.toLowerCase().includes(termLower)).slice(0, 5);
     }, [locationTerm]);
 
@@ -263,17 +285,17 @@ const ProfessionalFinder = () => {
                                     position: 'absolute', 
                                     top: '10px', 
                                     right: '10px', 
-                                    background: 'white', // White background
-                                    borderRadius: '50%', // Circular shape
-                                    width: '40px',        // Fixed size
-                                    height: '40px',       // Fixed size
+                                    background: 'white', 
+                                    borderRadius: '50%', 
+                                    width: '40px', 
+                                    height: '40px', 
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    border: '1px solid #ddd', // Light border
+                                    border: '1px solid #ddd', 
                                     cursor: 'pointer', 
                                     zIndex: 10,
-                                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)', // Subtle shadow
+                                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)', 
                                     transition: 'background-color 0.2s, border-color 0.2s',
                                 }}
                                 title={favoriteIds.includes(p.id) ? "Remove from Favorites" : "Add to Favorites"}
@@ -281,11 +303,11 @@ const ProfessionalFinder = () => {
                                 <svg 
                                     xmlns="http://www.w3.org/2000/svg" 
                                     viewBox="0 0 24 24" 
-                                    fill={favoriteIds.includes(p.id) ? '#dc3545' : '#ccc'} // Red if favorited, else gray
+                                    fill={favoriteIds.includes(p.id) ? '#dc3545' : '#ccc'} 
                                     width="24px" 
                                     height="24px"
                                     style={{ 
-                                        transition: 'fill 0.2s', // Smooth color transition
+                                        transition: 'fill 0.2s', 
                                     }}
                                 >
                                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>

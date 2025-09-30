@@ -10,7 +10,7 @@ connectDB();
 
 const app = express();
 app.use(express.json()); 
-app.use(cors({ origin: 'http://localhost:1006' })); // React App URL
+app.use(cors({ origin: 'http://localhost:1007' })); // React App URL
 
 // Import and use API routes
 const professionalsRoute = require('./routes/professionals');

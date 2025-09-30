@@ -6,18 +6,21 @@ const HistoryPage = () => {
     const navigate = useNavigate();
     const [bookingHistory, setBookingHistory] = useState([]);
 
-    // Get current user details
+    // Get current user details (used to fetch the correct user's history)
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
     // Load history when the component mounts
     useEffect(() => {
-        if (currentUser && currentUser.email) {
+        // Ensure we are in the browser and the user is logged in
+        if (typeof window !== 'undefined' && currentUser && currentUser.email) {
+            // The key is unique to the logged-in user's email
             const key = `bookingHistory_${currentUser.email}`;
             const history = JSON.parse(localStorage.getItem(key) || '[]');
             setBookingHistory(history);
         }
     }, [currentUser]);
 
+    // --- Access Control Check ---
     if (!currentUser) {
         return (
             <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
@@ -30,13 +33,14 @@ const HistoryPage = () => {
         );
     }
     
+    // --- Render History ---
     return (
         <div className="main-content" style={{ maxWidth: '900px' }}>
             <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: '20px 0' }}>
                 Booking History
             </h1>
             <p style={{ color: '#666', marginBottom: '20px' }}>
-                Review your past services and professionals booked via your account ({currentUser.email}).
+                Review your past services booked via your account ({currentUser.email}).
             </p>
 
             {bookingHistory.length === 0 ? (

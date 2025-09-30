@@ -17,40 +17,53 @@ const JoinProfessional = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        // Clear errors for the specific field as the user types
-        setErrors({ ...errors, [e.target.name]: null }); 
+        // Clear the specific error for the field as the user types
+        setErrors(prev => ({ ...prev, [e.target.name]: null })); 
     };
 
     const runValidation = () => {
         let currentErrors = {};
         
+        // 1. Name validation
         if (formData.name.length < 3) {
-            currentErrors.name = "Full Name is required.";
+            currentErrors.name = "Full Name is required (Min 3 chars).";
         }
+        
+        // 2. Email validation
         if (!validateEmail(formData.email)) {
             currentErrors.email = "Invalid email format.";
         }
+        
+        // 3. Profession validation
         if (!formData.profession) {
             currentErrors.profession = "Please select a profession.";
         }
-        const rate = parseInt(formData.rate);
-        if (isNaN(rate) || rate <= 0) {
-            currentErrors.rate = "Hourly Rate must be a positive number (₹).";
-        }
-        if (formData.desc.length < 20) {
-            currentErrors.desc = "Description must be at least 20 characters.";
+        
+        // 4. Rate validation (Uses parseFloat and checks for empty string first)
+        const rate = parseFloat(formData.rate);
+        if (formData.rate === '') {
+             currentErrors.rate = "Hourly Rate is required.";
+        } else if (isNaN(rate) || rate <= 0) {
+            currentErrors.rate = "Rate must be a positive number (₹).";
         }
         
+        // 5. Description validation
+        if (formData.desc.length < 20) {
+            currentErrors.desc = `Description must be at least 20 characters. (Current: ${formData.desc.length})`;
+        }
+        
+        // Update the full error state
         setErrors(currentErrors);
+        // The form is valid only if the collected errors object is empty
         return Object.keys(currentErrors).length === 0;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // 1. Run full validation check
+        // 1. Re-validate upon submission
         if (!runValidation()) {
-            alert("Please fix all validation errors before submitting your application.");
+            // No need for an extra alert here, as visual feedback shows the errors
             return;
         }
         
@@ -64,11 +77,11 @@ const JoinProfessional = () => {
                 profession: formData.profession,
                 rate: parseInt(formData.rate), 
                 desc: formData.desc,
-                rating: 5.0, // Default rating for new professional
+                rating: 5.0, 
                 image: "https://images.unsplash.com/photo-1520607162513-7740e53a2c57?w=400&auto=format&fit=crop", 
-                skills: [], // New professionals start with no skills
-                location: "Unspecified", // New professionals start with an unspecified location
-                isVerified: false, // New professionals need to be verified
+                skills: [], 
+                location: "Unspecified", 
+                isVerified: false, 
             };
 
             // 3. Save the updated list to localStorage
@@ -93,7 +106,7 @@ const JoinProfessional = () => {
     };
     
     // Determine if the submit button should be disabled
-    const isSubmitDisabled = isLoading || Object.keys(errors).length > 0;
+    const isSubmitDisabled = isLoading || Object.keys(errors).some(key => errors[key] !== null);
 
     return (
         <div className="signin-page-container">
@@ -103,13 +116,13 @@ const JoinProfessional = () => {
                 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     
-                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.name ? 'red' : '#ccc' }} />
+                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.name ? 'red' : '#ccc' }} />
                     {errors.name && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.name}</p>}
 
-                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.email ? 'red' : '#ccc' }} />
+                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.email ? 'red' : '#ccc' }} />
                     {errors.email && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.email}</p>}
                     
-                    <select name="profession" value={formData.profession} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }}>
+                    <select name="profession" value={formData.profession} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }}>
                         <option value="">Select Profession</option>
                         <option value="Plumber">Plumber</option>
                         <option value="Web Developer">Web Developer</option>
@@ -122,10 +135,10 @@ const JoinProfessional = () => {
                     </select>
                     {errors.profession && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.profession}</p>}
                     
-                    <input type="number" name="rate" placeholder="Hourly Rate (₹)" value={formData.rate} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.rate ? 'red' : '#ccc' }} />
+                    <input type="number" name="rate" placeholder="Hourly Rate (₹)" value={formData.rate} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.rate ? 'red' : '#ccc' }} />
                     {errors.rate && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.rate}</p>}
 
-                    <textarea name="desc" placeholder="Brief Bio / Description (Min 20 chars)" value={formData.desc} onChange={handleChange} rows="4" style={{ ...inputStyle, borderColor: errors.desc ? 'red' : '#ccc' }}></textarea>
+                    <textarea name="desc" placeholder="Brief Bio / Description (Min 20 chars)" value={formData.desc} onChange={handleChange} onBlur={runValidation} rows="4" style={{ ...inputStyle, borderColor: errors.desc ? 'red' : '#ccc' }}></textarea>
                     {errors.desc && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.desc}</p>}
                     
                     <button 
