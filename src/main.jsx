@@ -6,7 +6,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProfessionalFinder from './ProfessionalFinder.jsx'; 
 import SignIn from './pages/SignIn.jsx'; 
 import Header from './components/Header.jsx'; 
-import JoinProfessional from './pages/JoinProfessional.jsx'; // 👈 NEW IMPORT
+import JoinProfessional from './pages/JoinProfessional.jsx'; 
+import ProfessionalDetail from './pages/ProfessionalDetail.jsx'; 
+import FavoritesPage from './pages/FavoritesPage.jsx'; 
+import HistoryPage from './pages/HistoryPage.jsx'; // 👈 Must be imported!
 import './index.css'; 
 
 // IMPORTANT: Define the base path for React Router
@@ -21,27 +24,22 @@ function App() {
       {/* Main content area */}
       <div className="main-app-container">
         <Routes>
-          {/* Main search and finder page */}
+          {/* Core Routes */}
           <Route path="/" element={<ProfessionalFinder />} /> 
+          <Route path="/professional/:id" element={<ProfessionalDetail />} /> 
           
-          {/* Sign-in page */}
+          {/* Account Routes */}
           <Route path="/signin" element={<SignIn />} /> 
-
-          {/* 👈 NEW ROUTE FOR PROFESSIONAL SIGNUP */}
-          <Route path="/join" element={<JoinProfessional />} /> 
+          <Route path="/join" element={<JoinProfessional />} />
+          
+          {/* User Feature Routes */}
+          <Route path="/favorites" element={<FavoritesPage />} /> 
+          <Route path="/history" element={<HistoryPage />} /> 
         </Routes>
       </div>
     </BrowserRouter>
   );
 }
-
-// Add a simple container style class to index.css
-/* You can add this to your src/index.css */
-/*
-.main-app-container {
-    min-height: calc(100vh - 60px); 
-}
-*/
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,12 +1,9 @@
-// src/components/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Header = () => {
-    // State to hold the logged-in user data
     const [currentUser, setCurrentUser] = useState(null);
 
-    // Check for user session when component mounts
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
@@ -15,10 +12,10 @@ const Header = () => {
     }, []);
 
     const handleSignOut = () => {
-        localStorage.removeItem('currentUser'); // Clear the session data
-        setCurrentUser(null); // Clear state
+        localStorage.removeItem('currentUser');
+        setCurrentUser(null); 
         alert("You have been signed out.");
-        window.location.reload(); // Force page reload to update UI
+        window.location.reload(); 
     };
 
     return (
@@ -37,8 +34,24 @@ const Header = () => {
                 </Link>
 
                 {currentUser && currentUser.isLoggedIn ? (
-                    // Display user name and Sign Out button
+                    // Display links when logged in
                     <>
+                        {/* 👈 BOOKING HISTORY LINK */}
+                        <Link 
+                            to="/history" 
+                            style={{ textDecoration: 'none', color: '#333', padding: '8px 0', fontWeight: 'bold' }}
+                        >
+                            <span title="Booking History">🕒 History</span>
+                        </Link>
+                        
+                        {/* Favorites Link */}
+                        <Link 
+                            to="/favorites" 
+                            style={{ textDecoration: 'none', color: '#333', padding: '8px 0', fontWeight: 'bold' }}
+                        >
+                            ❤️ Favorites
+                        </Link>
+
                         <span style={{ fontWeight: 'bold', color: '#333' }}>
                             Hello, {currentUser.name.split(' ')[0]} 👋
                         </span>
