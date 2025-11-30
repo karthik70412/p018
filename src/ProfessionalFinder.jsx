@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { getAllProfessionals, availableCities } from './data.js'; // Fallback import
+import { getAllProfessionals, availableCities } from './data.js'; // Fallback and city data
 import PopularCategories from './components/PopularCategories.jsx'; 
 import { Link } from 'react-router-dom'; 
 import StarRating from './components/StarRating.jsx'; 
@@ -7,8 +7,8 @@ import useDebounce from './hooks/useDebounce.js';
 
 const ProfessionalFinder = () => {
     // --- STATE MANAGEMENT ---
-    // Initialize empty, we will populate this with API data or local data in useEffect
-    const [allProfessionals, setAllProfessionals] = useState([]); 
+    // Initialize with local data immediately as the guaranteed fallback
+    const [allProfessionals, setAllProfessionals] = useState(getAllProfessionals()); 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProfession, setSelectedProfession] = useState('');
     const [sortByRating, setSortByRating] = useState(false);
@@ -18,6 +18,7 @@ const ProfessionalFinder = () => {
     const [minRating, setMinRating] = useState('0');
     const [minRate, setMinRate] = useState('');
     const [maxRate, setMaxRate] = useState('');
+    const [availabilityFilter, setAvailabilityFilter] = useState('');
     
     // Favorites State
     const [favoritesKey, setFavoritesKey] = useState(0); 
@@ -38,28 +39,24 @@ const ProfessionalFinder = () => {
         return JSON.parse(localStorage.getItem(key) || '[]');
     }, [currentUser, favoritesKey]);
 
-    // 🚀 API FETCH EFFECT: Fetch data from the running server or fallback to local data
+    // 🚀 API FETCH EFFECT: Try to fetch live data (but the page will already be populated)
     useEffect(() => {
         const fetchProfessionals = async () => {
             try {
                 const res = await fetch('http://localhost:5000/api/professionals'); 
                 
-                if (!res.ok) {
-                    // If the API call fails, throw an error to trigger the catch block
-                    throw new Error(`HTTP error! Status: ${res.status}. Backend might be offline.`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setAllProfessionals(data); 
                 }
-                
-                const data = await res.json();
-                setAllProfessionals(data); 
             } catch (err) {
-                // FALLBACK: If the API fails to connect, load data from the local data.js
-                console.error("API connection failed. Loading local mock data as fallback.", err);
+                console.error("API connection failed. Displaying local mock data as fallback.", err);
                 const localData = getAllProfessionals();
                 setAllProfessionals(localData);
             }
         };
         fetchProfessionals();
-    }, []); // Runs once on component mount
+    }, []);
 
     // --- FAVORITES HANDLER ---
     const handleFavoriteToggle = (e, proId) => {
@@ -96,6 +93,7 @@ const ProfessionalFinder = () => {
         setMinRate('');
         setMaxRate('');
         setSortByRating(false);
+        setAvailabilityFilter('');
     };
     
     const handleClearSearch = () => setSearchTerm('');
@@ -104,7 +102,8 @@ const ProfessionalFinder = () => {
     const filteredAndSortedProfessionals = useMemo(() => {
         let list = [...allProfessionals]; 
         
-        // 1. Apply Search (Name, Profession, Description)
+        // 1. Search, 2. Profession, 3. Location, 4. Price, 5. Rating, 6. Availability, 7. Sort
+        
         const termLower = debouncedSearchTerm.toLowerCase();
         list = list.filter(p => {
             const matchesNamePro = p.name.toLowerCase().includes(termLower) || p.profession.toLowerCase().includes(termLower);
@@ -112,33 +111,31 @@ const ProfessionalFinder = () => {
             return matchesNamePro || matchesDescription;
         });
 
-        // 2. Apply Profession Filter
         if (selectedProfession) {
             list = list.filter(p => p.profession === selectedProfession);
         }
         
-        // 3. Apply Location Filter
         const locationLower = locationTerm.toLowerCase();
         if (locationLower) {
              list = list.filter(p => p.location && p.location.toLowerCase().includes(locationLower));
         }
 
-        // 4. Apply Price Range Filter
         const minR = parseInt(minRate) || 0; 
         const maxR = parseInt(maxRate) || Infinity; 
         list = list.filter(p => p.rate >= minR && p.rate <= maxR);
         
-        // 5. Apply Minimum Rating Filter
         const requiredRating = parseFloat(minRating);
         list = list.filter(p => p.rating >= requiredRating);
         
-        // 6. Apply Sort
+        // Availability Filter
+        list = list.filter(p => availabilityFilter === '' || (availabilityFilter === 'available' && p.isAvailable));
+
         if (sortByRating) {
             list.sort((a, b) => b.rating - a.rating);
         }
 
         return list;
-    }, [debouncedSearchTerm, selectedProfession, sortByRating, allProfessionals, minRate, maxRate, locationTerm, minRating]);
+    }, [debouncedSearchTerm, selectedProfession, sortByRating, allProfessionals, minRate, maxRate, locationTerm, minRating, availabilityFilter]);
 
     // --- Location Autocomplete Simulation ---
     const locationSuggestions = useMemo(() => {
@@ -160,16 +157,16 @@ const ProfessionalFinder = () => {
             />
 
             {/* Controls Section */}
-            <section className="controls-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+            <section className="controls-section">
                 
                 {/* Search Bar with Clear Icon */}
-                <div style={{ position: 'relative', gridColumn: 'span 2 / span 2' }}>
+                <div style={{ position: 'relative' }} className="search-input-group">
                     <input
                         type="text"
                         placeholder="Search name/profession/keywords..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                        style={{ width: '100%' }}
                     />
                     {searchTerm && (
                         <button 
@@ -188,7 +185,7 @@ const ProfessionalFinder = () => {
                         placeholder="Filter by City/Area..."
                         value={locationTerm}
                         onChange={(e) => setLocationTerm(e.target.value)}
-                        style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+                        style={{ width: '100%' }}
                     />
                     {locationSuggestions.length > 0 && (
                         <div style={{ position: 'absolute', zIndex: 10, background: 'white', border: '1px solid #ccc', borderRadius: '5px', width: '100%', maxHeight: '200px', overflowY: 'auto', marginTop: '5px' }}>
@@ -209,16 +206,25 @@ const ProfessionalFinder = () => {
                 <select
                     value={selectedProfession}
                     onChange={(e) => setSelectedProfession(e.target.value)}
+                    aria-label="Filter by profession"
                 >
                     <option value="">All Services</option>
                     <option value="Plumber">Plumber</option>
-                    <option value="Web Developer">Web Developer</option>
                     <option value="Electrician">Electrician</option>
-                    <option value="Photographer">Photographer</option>
-                    <option value="Appliance Technician">Appliance Technician</option>
+                    <option value="Carpenter">Carpenter</option>
+                    <option value="Painter">Painter</option>
+                    <option value="Cleaner">Cleaner</option>
+                    <option value="Tutor">Tutor (Maths/Science)</option>
+                    <option value="Music Teacher">Music Teacher</option>
+                    <option value="Fitness Trainer">Fitness Trainer</option>
+                    <option value="Photographer">Photographer / Videographer</option>
                     <option value="Graphic Designer">Graphic Designer</option>
-                    <option value="Deep Cleaner">Deep Cleaner</option>
-                    <option value="Car Mechanic">Car Mechanic</option>
+                    <option value="Web Developer">Web/App Developer</option>
+                    <option value="Content Writer">Content Writer</option>
+                    <option value="Beautician">Beautician / Makeup artist</option>
+                    <option value="Accountant">Accountant</option>
+                    <option value="Legal Consultant">Legal Consultant</option>
+                    <option value="Digital Marketing Expert">Digital Marketing Expert</option>
                 </select>
 
                 {/* Price Range Filters */}
@@ -239,11 +245,22 @@ const ProfessionalFinder = () => {
                 <select
                     value={minRating}
                     onChange={(e) => setMinRating(e.target.value)}
+                    aria-label="Filter by minimum star rating"
                 >
                     <option value="0">Min Rating (Any)</option>
                     <option value="4.5">★★★★★ 4.5 & Up</option>
                     <option value="4.0">★★★★☆ 4.0 & Up</option>
                     <option value="3.5">★★★☆☆ 3.5 & Up</option>
+                </select>
+
+                {/* FEATURE: Filter by Availability */}
+                <select
+                    value={availabilityFilter}
+                    onChange={(e) => setAvailabilityFilter(e.target.value)}
+                    aria-label="Filter by availability"
+                >
+                    <option value="">Availability (Any)</option>
+                    <option value="available">Available Now</option>
                 </select>
 
                 {/* Sort Button */}
@@ -257,6 +274,7 @@ const ProfessionalFinder = () => {
                 {/* Clear All Filters Button */}
                 <button
                     onClick={handleClearFilters}
+                    aria-live="polite"
                     style={{ backgroundColor: '#dc3545', color: 'white', fontWeight: 'bold' }}
                 >
                     Clear All Filters
@@ -333,6 +351,12 @@ const ProfessionalFinder = () => {
                                                 ✓
                                             </span>
                                         )}
+                                        {/* FEATURE: Availability Dot */}
+                                        <span style={{ 
+                                            backgroundColor: p.isAvailable ? '#28a745' : '#dc3545', 
+                                            width: '10px', height: '10px', borderRadius: '50%', 
+                                            marginLeft: '10px', display: 'inline-block' 
+                                        }} title={p.isAvailable ? 'Available Now' : 'Currently Booked'}></span>
                                     </div>
                                     
                                     {/* Skills Tags */}

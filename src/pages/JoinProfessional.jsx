@@ -39,7 +39,7 @@ const JoinProfessional = () => {
             currentErrors.profession = "Please select a profession.";
         }
         
-        // 4. Rate validation (Uses parseFloat and checks for empty string first)
+        // 4. Rate validation (IMPROVED: Handles empty string and ensures positive number)
         const rate = parseFloat(formData.rate);
         if (formData.rate === '') {
              currentErrors.rate = "Hourly Rate is required.";
@@ -52,52 +52,60 @@ const JoinProfessional = () => {
             currentErrors.desc = `Description must be at least 20 characters. (Current: ${formData.desc.length})`;
         }
         
-        // Update the full error state
         setErrors(currentErrors);
         // The form is valid only if the collected errors object is empty
         return Object.keys(currentErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => { // 👈 API Submission requires ASYNC
         e.preventDefault();
         
-        // 1. Re-validate upon submission
+        // 1. Run full validation check
         if (!runValidation()) {
-            // No need for an extra alert here, as visual feedback shows the errors
             return;
         }
         
         setIsLoading(true);
 
-        setTimeout(() => { // Simulate network delay
-            // 2. Create the new professional object
-            const newProfessional = {
-                id: Date.now(), 
-                name: formData.name,
-                profession: formData.profession,
-                rate: parseInt(formData.rate), 
-                desc: formData.desc,
-                rating: 5.0, 
-                image: "https://images.unsplash.com/photo-1520607162513-7740e53a2c57?w=400&auto=format&fit=crop", 
-                skills: [], 
-                location: "Unspecified", 
-                isVerified: false, 
-            };
+        // 2. Create the new professional object (formatted for MongoDB Schema)
+        const newProfessional = {
+            name: formData.name,
+            profession: formData.profession,
+            rate: parseInt(formData.rate), 
+            desc: formData.desc,
+            rating: 5.0, // Default rating for new professional
+            image: "https://images.unsplash.com/photo-1520607162513-7740e53a2c57?w=400&auto-format&fit=crop", 
+            skills: [], 
+            location: "Unspecified", 
+            isVerified: false, 
+        };
 
-            // 3. Save the updated list to localStorage
-            const existingData = localStorage.getItem('newProfessionals');
-            const existingProfessionals = existingData ? JSON.parse(existingData) : [];
-            existingProfessionals.push(newProfessional);
-            localStorage.setItem('newProfessionals', JSON.stringify(existingProfessionals));
+        try {
+            // 3. API CALL: Send new professional data to Express server
+            const response = await fetch('http://localhost:5000/api/professionals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newProfessional),
+            });
 
-            setIsLoading(false); 
-            
-            alert(`Success! ${newProfessional.name} (${newProfessional.profession}) is now listed on the platform and available for hire!`);
+            if (!response.ok) {
+                // If API fails, throw error to trigger catch block
+                throw new Error('Failed to register professional via API.');
+            }
+
+            // 4. Success Feedback and Redirect
+            alert(`Success! ${newProfessional.name} is now registered in the cloud database!`);
             
             // Navigate and refresh to show the newly added professional immediately
             navigate('/');
             window.location.reload(); 
-        }, 1000);
+
+        } catch (error) {
+            console.error("API Submission Failed. Ensure backend server is running.", error);
+            alert("Submission failed. Ensure backend server is running on port 5000.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const inputStyle = { 
@@ -125,13 +133,21 @@ const JoinProfessional = () => {
                     <select name="profession" value={formData.profession} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }}>
                         <option value="">Select Profession</option>
                         <option value="Plumber">Plumber</option>
-                        <option value="Web Developer">Web Developer</option>
                         <option value="Electrician">Electrician</option>
-                        <option value="Photographer">Photographer</option>
-                        <option value="Appliance Technician">Appliance Technician</option>
+                        <option value="Carpenter">Carpenter</option>
+                        <option value="Painter">Painter</option>
+                        <option value="Cleaner">Cleaner</option>
+                        <option value="Tutor">Tutor (Maths/Science)</option>
+                        <option value="Music Teacher">Music Teacher</option>
+                        <option value="Fitness Trainer">Fitness Trainer</option>
+                        <option value="Photographer">Photographer / Videographer</option>
                         <option value="Graphic Designer">Graphic Designer</option>
-                        <option value="Deep Cleaner">Deep Cleaner</option>
-                        <option value="Car Mechanic">Car Mechanic</option>
+                        <option value="Web Developer">Web/App Developer</option>
+                        <option value="Content Writer">Content Writer</option>
+                        <option value="Beautician">Beautician / Makeup artist</option>
+                        <option value="Accountant">Accountant</option>
+                        <option value="Legal Consultant">Legal Consultant</option>
+                        <option value="Digital Marketing Expert">Digital Marketing Expert</option>
                     </select>
                     {errors.profession && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.profession}</p>}
                     
