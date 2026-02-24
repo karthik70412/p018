@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Helper function for basic email format validation
 const validateEmail = (email) => {
     return /\S+@\S+\.\S+/.test(email);
 };
@@ -13,157 +12,128 @@ const JoinProfessional = () => {
         name: '', profession: '', rate: '', desc: '', email: ''
     });
     const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState({}); // State for validation errors
+    const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        // Clear the specific error for the field as the user types
         setErrors(prev => ({ ...prev, [e.target.name]: null })); 
     };
 
     const runValidation = () => {
         let currentErrors = {};
-        
-        // 1. Name validation
-        if (formData.name.length < 3) {
-            currentErrors.name = "Full Name is required (Min 3 chars).";
-        }
-        
-        // 2. Email validation
-        if (!validateEmail(formData.email)) {
-            currentErrors.email = "Invalid email format.";
-        }
-        
-        // 3. Profession validation
-        if (!formData.profession) {
-            currentErrors.profession = "Please select a profession.";
-        }
-        
-        // 4. Rate validation (IMPROVED: Handles empty string and ensures positive number)
+        if (formData.name.length < 3) currentErrors.name = "Full Name is required.";
+        if (!validateEmail(formData.email)) currentErrors.email = "Invalid email format.";
+        if (!formData.profession) currentErrors.profession = "Select a profession.";
         const rate = parseFloat(formData.rate);
-        if (formData.rate === '') {
-             currentErrors.rate = "Hourly Rate is required.";
-        } else if (isNaN(rate) || rate <= 0) {
-            currentErrors.rate = "Rate must be a positive number (₹).";
-        }
-        
-        // 5. Description validation
-        if (formData.desc.length < 20) {
-            currentErrors.desc = `Description must be at least 20 characters. (Current: ${formData.desc.length})`;
-        }
+        if (isNaN(rate) || rate <= 0) currentErrors.rate = "Enter a valid hourly rate.";
+        if (formData.desc.length < 20) currentErrors.desc = "Min 20 characters required.";
         
         setErrors(currentErrors);
-        // The form is valid only if the collected errors object is empty
         return Object.keys(currentErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => { // 👈 API Submission requires ASYNC
+    const handleSubmit = (e) => {
         e.preventDefault();
-        
-        // 1. Run full validation check
-        if (!runValidation()) {
-            return;
-        }
+        if (!runValidation()) return;
         
         setIsLoading(true);
 
-        // 2. Create the new professional object (formatted for MongoDB Schema)
+        // Create the new professional object
         const newProfessional = {
+            id: Date.now(), // Unique ID
             name: formData.name,
             profession: formData.profession,
             rate: parseInt(formData.rate), 
             desc: formData.desc,
-            rating: 5.0, // Default rating for new professional
+            rating: 5.0, 
             image: "https://images.unsplash.com/photo-1520607162513-7740e53a2c57?w=400&auto-format&fit=crop", 
-            skills: [], 
-            location: "Unspecified", 
-            isVerified: false, 
+            skills: ["Expert Service"], 
+            location: "New Delhi", 
+            isVerified: true, 
+            isAvailable: true
         };
 
-        try {
-            // 3. API CALL: Send new professional data to Express server
-            const response = await fetch('http://localhost:5000/api/professionals', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newProfessional),
-            });
+        // --- Bypassing Backend: Save to LocalStorage ---
+        setTimeout(() => {
+            try {
+                // Get existing local pros or empty array
+                const localPros = JSON.parse(localStorage.getItem('localRegisteredPros') || '[]');
+                localPros.push(newProfessional);
+                localStorage.setItem('localRegisteredPros', JSON.stringify(localPros));
 
-            if (!response.ok) {
-                // If API fails, throw error to trigger catch block
-                throw new Error('Failed to register professional via API.');
+                alert(`Success! ${newProfessional.name} has been added to the directory.`);
+                setIsLoading(false);
+                navigate('/');
+                window.location.reload(); 
+            } catch (err) {
+                console.error(err);
+                setIsLoading(false);
+                alert("Submission failed locally.");
             }
-
-            // 4. Success Feedback and Redirect
-            alert(`Success! ${newProfessional.name} is now registered in the cloud database!`);
-            
-            // Navigate and refresh to show the newly added professional immediately
-            navigate('/');
-            window.location.reload(); 
-
-        } catch (error) {
-            console.error("API Submission Failed. Ensure backend server is running.", error);
-            alert("Submission failed. Ensure backend server is running on port 5000.");
-        } finally {
-            setIsLoading(false);
-        }
+        }, 1000);
     };
 
-    const inputStyle = { 
-        padding: '12px', border: '1px solid', borderRadius: '5px', marginBottom: '5px', 
-        width: '100%', boxSizing: 'border-box'
+    // Premium UI Styles
+    const labelStyle = {
+        display: 'block', fontSize: '11px', fontWeight: '600', 
+        textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', color: '#000'
     };
-    
-    // Determine if the submit button should be disabled
+
+    const inputStyle = (hasError) => ({
+        padding: '14px', border: '1px solid', borderRadius: '4px', marginBottom: '5px', 
+        width: '100%', boxSizing: 'border-box', outline: 'none',
+        borderColor: hasError ? '#000' : '#eee', fontSize: '14px'
+    });
+
     const isSubmitDisabled = isLoading || Object.keys(errors).some(key => errors[key] !== null);
 
     return (
-        <div className="signin-page-container">
-            <div className="signin-form-box">
-                <h2 style={{ fontSize: '30px', fontWeight: 'bold', color: '#333', marginBottom: '20px' }}>Join Our Network</h2>
-                <p style={{ color: '#666', marginBottom: '25px' }}>Register your services to connect with clients.</p>
+        <div className="signin-page-container" style={{ backgroundColor: '#fff' }}>
+            <div className="signin-form-box" style={{ border: '1px solid #eee', boxShadow: 'none', padding: '50px', maxWidth: '500px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#000', marginBottom: '10px', letterSpacing: '-1px' }}>Join Our Network</h2>
+                <p style={{ color: '#757575', marginBottom: '40px', fontSize: '15px' }}>Register as a professional to reach more clients.</p>
                 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     
-                    <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.name ? 'red' : '#ccc' }} />
-                    {errors.name && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.name}</p>}
+                    <div>
+                        <label style={labelStyle}>Full Name</label>
+                        <input type="text" name="name" placeholder="John Doe" value={formData.name} onChange={handleChange} style={inputStyle(errors.name)} />
+                        {errors.name && <p style={{ color: '#000', fontSize: '11px', fontWeight: '700', marginTop: '5px' }}>{errors.name}</p>}
+                    </div>
 
-                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.email ? 'red' : '#ccc' }} />
-                    {errors.email && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.email}</p>}
+                    <div>
+                        <label style={labelStyle}>Email Address</label>
+                        <input type="email" name="email" placeholder="john@example.com" value={formData.email} onChange={handleChange} style={inputStyle(errors.email)} />
+                        {errors.email && <p style={{ color: '#000', fontSize: '11px', fontWeight: '700', marginTop: '5px' }}>{errors.email}</p>}
+                    </div>
                     
-                    <select name="profession" value={formData.profession} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.profession ? 'red' : '#ccc' }}>
-                        <option value="">Select Profession</option>
-                        <option value="Plumber">Plumber</option>
-                        <option value="Electrician">Electrician</option>
-                        <option value="Carpenter">Carpenter</option>
-                        <option value="Painter">Painter</option>
-                        <option value="Cleaner">Cleaner</option>
-                        <option value="Tutor">Tutor (Maths/Science)</option>
-                        <option value="Music Teacher">Music Teacher</option>
-                        <option value="Fitness Trainer">Fitness Trainer</option>
-                        <option value="Photographer">Photographer / Videographer</option>
-                        <option value="Graphic Designer">Graphic Designer</option>
-                        <option value="Web Developer">Web/App Developer</option>
-                        <option value="Content Writer">Content Writer</option>
-                        <option value="Beautician">Beautician / Makeup artist</option>
-                        <option value="Accountant">Accountant</option>
-                        <option value="Legal Consultant">Legal Consultant</option>
-                        <option value="Digital Marketing Expert">Digital Marketing Expert</option>
-                    </select>
-                    {errors.profession && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.profession}</p>}
+                    <div>
+                        <label style={labelStyle}>Profession</label>
+                        <select name="profession" value={formData.profession} onChange={handleChange} style={inputStyle(errors.profession)}>
+                            <option value="">Select Profession</option>
+                            <option value="Plumber">Plumber</option>
+                            <option value="Electrician">Electrician</option>
+                            <option value="Carpenter">Carpenter</option>
+                            <option value="Web Developer">Web Developer</option>
+                        </select>
+                        {errors.profession && <p style={{ color: '#000', fontSize: '11px', fontWeight: '700', marginTop: '5px' }}>{errors.profession}</p>}
+                    </div>
                     
-                    <input type="number" name="rate" placeholder="Hourly Rate (₹)" value={formData.rate} onChange={handleChange} onBlur={runValidation} style={{ ...inputStyle, borderColor: errors.rate ? 'red' : '#ccc' }} />
-                    {errors.rate && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.rate}</p>}
+                    <div>
+                        <label style={labelStyle}>Hourly Rate (₹)</label>
+                        <input type="number" name="rate" placeholder="500" value={formData.rate} onChange={handleChange} style={inputStyle(errors.rate)} />
+                        {errors.rate && <p style={{ color: '#000', fontSize: '11px', fontWeight: '700', marginTop: '5px' }}>{errors.rate}</p>}
+                    </div>
 
-                    <textarea name="desc" placeholder="Brief Bio / Description (Min 20 chars)" value={formData.desc} onChange={handleChange} onBlur={runValidation} rows="4" style={{ ...inputStyle, borderColor: errors.desc ? 'red' : '#ccc' }}></textarea>
-                    {errors.desc && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.desc}</p>}
+                    <div>
+                        <label style={labelStyle}>Bio / Description</label>
+                        <textarea name="desc" placeholder="Tell clients about your expertise..." value={formData.desc} onChange={handleChange} rows="4" style={inputStyle(errors.desc)}></textarea>
+                        {errors.desc && <p style={{ color: '#000', fontSize: '11px', fontWeight: '700', marginTop: '5px' }}>{errors.desc}</p>}
+                    </div>
                     
-                    <button 
-                        type="submit" 
-                        className="signin-submit-btn"
-                        disabled={isSubmitDisabled} 
-                        style={{ opacity: isSubmitDisabled ? 0.7 : 1, marginTop: '15px' }}
-                    >
-                        {isLoading ? 'Processing...' : 'Submit Application'}
+                    <button type="submit" className="signin-submit-btn" disabled={isSubmitDisabled} 
+                        style={{ backgroundColor: '#000', color: '#fff', padding: '15px', borderRadius: '4px', fontWeight: '700', marginTop: '15px', cursor: isSubmitDisabled ? 'not-allowed' : 'pointer', opacity: isSubmitDisabled ? 0.5 : 1 }}>
+                        {isLoading ? 'PROCESSING...' : 'SUBMIT APPLICATION'}
                     </button>
                 </form>
             </div>

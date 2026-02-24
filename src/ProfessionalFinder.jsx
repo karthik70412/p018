@@ -6,7 +6,14 @@ import StarRating from './components/StarRating.jsx';
 import useDebounce from './hooks/useDebounce.js';
 
 const ProfessionalFinder = () => {
-    const [allProfessionals, setAllProfessionals] = useState(getAllProfessionals()); 
+    // --- STATE MANAGEMENT ---
+    // Initialize by combining hardcoded data and locally registered pros
+    const [allProfessionals, setAllProfessionals] = useState(() => {
+        const baseData = getAllProfessionals();
+        const localData = JSON.parse(localStorage.getItem('localRegisteredPros') || '[]');
+        return [...baseData, ...localData];
+    });
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProfession, setSelectedProfession] = useState('');
     const [sortByRating, setSortByRating] = useState(false);
@@ -25,27 +32,14 @@ const ProfessionalFinder = () => {
     };
     const currentUser = getCurrentUser();
 
+    // Load favorite IDs from storage
     const favoriteIds = useMemo(() => {
         if (!currentUser || !currentUser.email) return [];
         const key = `favorites_${currentUser.email}`;
         return JSON.parse(localStorage.getItem(key) || '[]');
     }, [currentUser, favoritesKey]);
 
-    useEffect(() => {
-        const fetchProfessionals = async () => {
-            try {
-                const res = await fetch('http://localhost:5000/api/professionals'); 
-                if (res.ok) {
-                    const data = await res.json();
-                    setAllProfessionals(data); 
-                }
-            } catch (err) {
-                console.error("API connection failed. Fallback to local data.");
-            }
-        };
-        fetchProfessionals();
-    }, []);
-
+    // --- FAVORITES HANDLER ---
     const handleFavoriteToggle = (e, proId) => {
         e.preventDefault(); 
         e.stopPropagation(); 
@@ -75,6 +69,7 @@ const ProfessionalFinder = () => {
         setAvailabilityFilter('');
     };
 
+    // --- FILTERING LOGIC ---
     const filteredAndSortedProfessionals = useMemo(() => {
         let list = [...allProfessionals]; 
         const termLower = debouncedSearchTerm.toLowerCase();
@@ -86,14 +81,23 @@ const ProfessionalFinder = () => {
         if (selectedProfession) list = list.filter(p => p.profession === selectedProfession);
         const locLower = locationTerm.toLowerCase();
         if (locLower) list = list.filter(p => p.location?.toLowerCase().includes(locLower));
+        
         const minR = parseInt(minRate) || 0; 
         const maxR = parseInt(maxRate) || Infinity; 
         list = list.filter(p => p.rate >= minR && p.rate <= maxR);
         list = list.filter(p => p.rating >= parseFloat(minRating));
         list = list.filter(p => availabilityFilter === '' || (availabilityFilter === 'available' && p.isAvailable));
+
         if (sortByRating) list.sort((a, b) => b.rating - a.rating);
         return list;
     }, [debouncedSearchTerm, selectedProfession, sortByRating, allProfessionals, minRate, maxRate, locationTerm, minRating, availabilityFilter]);
+
+    // --- Location Autocomplete ---
+    const locationSuggestions = useMemo(() => {
+        if (locationTerm.length < 2) return []; 
+        const termLower = locationTerm.toLowerCase();
+        return availableCities.filter(city => city.toLowerCase().includes(termLower)).slice(0, 5);
+    }, [locationTerm]);
 
     return (
         <main className="main-content">
@@ -123,6 +127,15 @@ const ProfessionalFinder = () => {
                         value={locationTerm}
                         onChange={(e) => setLocationTerm(e.target.value)}
                     />
+                    {locationSuggestions.length > 0 && (
+                        <div style={{ position: 'absolute', zIndex: 10, background: 'white', border: '1px solid #eee', width: '100%', marginTop: '5px' }}>
+                            {locationSuggestions.map(city => (
+                                <div key={city} onClick={() => setLocationTerm(city)} style={{ padding: '10px', cursor: 'pointer', borderBottom: '1px solid #f9f9f9' }}>
+                                    {city}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <select value={selectedProfession} onChange={(e) => setSelectedProfession(e.target.value)}>
@@ -130,9 +143,6 @@ const ProfessionalFinder = () => {
                     <option value="Plumber">Plumber</option>
                     <option value="Electrician">Electrician</option>
                     <option value="Carpenter">Carpenter</option>
-                    <option value="Painter">Painter</option>
-                    <option value="Cleaner">Cleaner</option>
-                    <option value="Tutor">Tutor</option>
                     <option value="Web Developer">Developer</option>
                 </select>
 
@@ -149,7 +159,8 @@ const ProfessionalFinder = () => {
                     style={{ 
                         backgroundColor: sortByRating ? '#000' : '#fff', 
                         color: sortByRating ? '#fff' : '#000',
-                        border: '1px solid #000'
+                        border: '1px solid #000',
+                        cursor: 'pointer'
                     }}
                     onClick={() => setSortByRating(!sortByRating)}
                 >
@@ -188,16 +199,17 @@ const ProfessionalFinder = () => {
                         <Link to={`/professional/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                             <div className="card-content" style={{ padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                                    <div style={{ width: '45px', height: '45px', backgroundColor: '#f0f0f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '12px', fontSize: '20px' }}>👤</div>
+                                    <div style={{ width: '45px', height: '45px', backgroundColor: '#000', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '12px', fontSize: '18px', fontWeight: 'bold' }}>
+                                        {p.name.charAt(0)}
+                                    </div>
                                     <div>
                                         <h3 style={{ fontSize: '18px', fontWeight: '700', margin: '0', color: '#000' }}>{p.name}</h3>
                                         <p style={{ color: '#757575', fontWeight: '500', fontSize: '13px', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.profession}</p>
                                     </div>
-                                    {p.isVerified && <span style={{ marginLeft: 'auto', color: '#000', fontSize: '14px' }}>●</span>}
                                 </div>
                                 
                                 <div style={{ marginBottom: '15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                    {p.skills.slice(0, 3).map(skill => (
+                                    {p.skills?.slice(0, 3).map(skill => (
                                         <span key={skill} className="skill-tag" style={{ border: '1px solid #eee', color: '#757575', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
                                             {skill}
                                         </span>
@@ -213,8 +225,8 @@ const ProfessionalFinder = () => {
                                     <p style={{ margin: 0, fontWeight: '800', fontSize: '16px' }}>₹{p.rate}<span style={{ fontSize: '12px', fontWeight: '400', color: '#757575' }}> /hr</span></p> 
                                 </div>
                                 
-                                <button className="hire-btn">
-                                    Book Now
+                                <button className="hire-btn" style={{ marginTop: '20px', width: '100%', padding: '12px', backgroundColor: '#000', color: '#fff', borderRadius: '4px', fontWeight: '700', border: 'none', cursor: 'pointer' }}>
+                                    VIEW PROFILE
                                 </button>
                             </div>
                         </Link>
