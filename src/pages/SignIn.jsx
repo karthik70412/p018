@@ -38,21 +38,21 @@ const SignIn = () => {
         e.preventDefault();
         if (!runValidation()) return;
         
-        setIsLoading(true); // Start loading
+        setIsLoading(true); 
         
-        setTimeout(() => { // Simulate network delay
+        setTimeout(() => { 
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const user = users.find(u => u.email === formData.email && u.password === formData.password);
 
-            setIsLoading(false); // Stop loading
+            setIsLoading(false); 
 
             if (user) {
                 localStorage.setItem('currentUser', JSON.stringify({ name: user.name, isLoggedIn: true, email: user.email }));
-                alert(`Welcome back, ${user.name}! Successfully signed in.`);
+                alert(`Welcome back, ${user.name}!`);
                 navigate('/');
                 window.location.reload(); 
             } else {
-                alert("Login failed. User not found or incorrect credentials. Directing to registration.");
+                alert("Incorrect credentials. Directing to registration.");
                 setIsRegistering(true); 
             }
         }, 800); 
@@ -62,14 +62,14 @@ const SignIn = () => {
         e.preventDefault();
         if (!runValidation()) return;
         
-        setIsLoading(true); // Start loading
+        setIsLoading(true); 
 
-        setTimeout(() => { // Simulate network delay
+        setTimeout(() => { 
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             
             if (users.some(u => u.email === formData.email)) {
                 setIsLoading(false);
-                alert("Error: A user with this email already exists. Please sign in.");
+                alert("Email already exists. Please sign in.");
                 setIsRegistering(false);
                 return;
             }
@@ -79,65 +79,117 @@ const SignIn = () => {
             localStorage.setItem('users', JSON.stringify(users));
             localStorage.setItem('currentUser', JSON.stringify({ name: newUser.name, isLoggedIn: true, email: newUser.email }));
             
-            setIsLoading(false); // Stop loading
+            setIsLoading(false); 
 
-            alert(`Registration successful! Welcome, ${newUser.name}. You are now signed in.`);
+            alert(`Welcome, ${newUser.name}!`);
             navigate('/');
             window.location.reload(); 
         }, 1000);
     };
 
-    const commonInputStyle = { 
-        width: '100%', padding: '12px', marginBottom: '5px', border: '1px solid',
-        borderColor: '#ccc', borderRadius: '5px', boxSizing: 'border-box'
+    // UI DESIGN TOKENS
+    const labelStyle = {
+        display: 'block',
+        fontSize: '11px',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        marginBottom: '8px',
+        color: '#000'
     };
-    
-    // Determine if the submit button should be disabled
+
+    const inputStyle = (hasError) => ({
+        width: '100%',
+        padding: '14px',
+        marginBottom: '4px',
+        border: '1px solid',
+        borderColor: hasError ? '#000' : '#eee', // Mono error state: Black border instead of red
+        borderRadius: '4px',
+        boxSizing: 'border-box',
+        fontSize: '14px',
+        backgroundColor: '#fff',
+        outline: 'none',
+        transition: 'border-color 0.2s ease'
+    });
+
     const isSubmitDisabled = isLoading || Object.keys(errors).length > 0;
 
     return (
-        <div className="signin-page-container">
-            <div className="signin-form-box">
-                <h2 style={{ fontSize: '30px', fontWeight: 'bold', color: '#333', marginBottom: '10px' }}>
-                    {isRegistering ? 'Register as Client' : 'Sign In'}
+        <div className="signin-page-container" style={{ backgroundColor: '#fff' }}>
+            <div className="signin-form-box" style={{ 
+                border: '1px solid #eee', 
+                boxShadow: 'none', 
+                padding: '50px',
+                maxWidth: '450px' 
+            }}>
+                <h2 style={{ 
+                    fontSize: '32px', 
+                    fontWeight: '700', 
+                    color: '#000', 
+                    marginBottom: '8px',
+                    letterSpacing: '-1px' 
+                }}>
+                    {isRegistering ? 'Create Account' : 'Welcome Back'}
                 </h2>
-                <p style={{ color: '#666', marginBottom: '25px' }}>
-                    {isRegistering ? 'Create your new account.' : 'Access your client account.'}
+                <p style={{ color: '#757575', fontSize: '15px', marginBottom: '40px' }}>
+                    {isRegistering ? 'Enter your details to get started.' : 'Sign in to access your dashboard.'}
                 </p>
                 
                 <form onSubmit={isRegistering ? handleRegister : handleLogin} 
-                      style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                      style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     
                     {isRegistering && (
-                        <>
-                            <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} style={commonInputStyle} required />
-                            {errors.name && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.name}</p>}
-                        </>
+                        <div>
+                            <label style={labelStyle}>Full Name</label>
+                            <input type="text" name="name" placeholder="John Doe" value={formData.name} onChange={handleChange} style={inputStyle(errors.name)} required />
+                            {errors.name && <p style={{ color: '#000', fontSize: '11px', marginTop: '5px', fontWeight: '600' }}>{errors.name}</p>}
+                        </div>
                     )}
 
-                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} style={{ ...commonInputStyle, borderColor: errors.email ? 'red' : '#ccc' }} required />
-                    {errors.email && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.email}</p>}
+                    <div>
+                        <label style={labelStyle}>Email Address</label>
+                        <input type="email" name="email" placeholder="example@mail.com" value={formData.email} onChange={handleChange} style={inputStyle(errors.email)} required />
+                        {errors.email && <p style={{ color: '#000', fontSize: '11px', marginTop: '5px', fontWeight: '600' }}>{errors.email}</p>}
+                    </div>
                     
-                    <input type="password" name="password" placeholder="Password (min 6 chars)" value={formData.password} onChange={handleChange} style={{ ...commonInputStyle, borderColor: errors.password ? 'red' : '#ccc' }} required />
-                    {errors.password && <p style={{ color: 'red', fontSize: '12px', margin: '0 0 10px 0' }}>{errors.password}</p>}
+                    <div>
+                        <label style={labelStyle}>Password</label>
+                        <input type="password" name="password" placeholder="••••••••" value={formData.password} onChange={handleChange} style={inputStyle(errors.password)} required />
+                        {errors.password && <p style={{ color: '#000', fontSize: '11px', marginTop: '5px', fontWeight: '600' }}>{errors.password}</p>}
+                    </div>
                     
-                    <button type="submit" className="signin-submit-btn" style={{ marginTop: '10px', opacity: isSubmitDisabled ? 0.7 : 1 }} disabled={isSubmitDisabled}>
-                        {isLoading ? 'Processing...' : (isRegistering ? 'Register & Sign In' : 'Sign In')}
+                    <button type="submit" className="signin-submit-btn" 
+                        style={{ 
+                            marginTop: '10px', 
+                            height: '50px',
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            letterSpacing: '0.5px',
+                            opacity: isSubmitDisabled ? 0.5 : 1,
+                            cursor: isSubmitDisabled ? 'not-allowed' : 'pointer'
+                        }} 
+                        disabled={isSubmitDisabled}>
+                        {isLoading ? 'PLEASE WAIT...' : (isRegistering ? 'CREATE ACCOUNT' : 'SIGN IN')}
                     </button>
                 </form>
                 
-                <p style={{ marginTop: '20px', color: '#666', fontSize: '14px' }}>
-                    {isRegistering ? 'Already have an account? ' : 'Not a client yet? '}
-                    <button 
-                        onClick={() => setIsRegistering(!isRegistering)} 
-                        style={{ background: 'none', border: 'none', color: '#007bff', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
-                        disabled={isLoading}
-                    >
-                        {isRegistering ? 'Sign In' : 'Register Now'}
-                    </button>
-                </p>
+                <div style={{ marginTop: '30px', borderTop: '1px solid #eee', paddingTop: '25px', textAlign: 'center' }}>
+                    <p style={{ color: '#757575', fontSize: '13px' }}>
+                        {isRegistering ? 'Already have an account? ' : 'Don\'t have an account? '}
+                        <button 
+                            onClick={() => { setIsRegistering(!isRegistering); setErrors({}); }} 
+                            style={{ background: 'none', border: 'none', color: '#000', fontWeight: '700', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                            disabled={isLoading}
+                        >
+                            {isRegistering ? 'SIGN IN' : 'REGISTER NOW'}
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
     );
 };
+
 export default SignIn;

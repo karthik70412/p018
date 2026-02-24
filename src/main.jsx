@@ -15,7 +15,7 @@ import SupportPage from './pages/SupportPage.jsx';
 // 🚀 NEW DASHBOARD AND CHAT MOCK COMPONENTS
 import DashboardPage from './pages/DashboardPage.jsx';
 import ChatMockPage from './pages/ChatMockPage.jsx';
-import Footer from './components/Footer.jsx'; // 👈 CRITICAL FIX: Footer component imported
+import Footer from './components/Footer.jsx';
 
 import './index.css'; 
 

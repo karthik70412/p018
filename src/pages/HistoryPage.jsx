@@ -6,64 +6,100 @@ const HistoryPage = () => {
     const navigate = useNavigate();
     const [bookingHistory, setBookingHistory] = useState([]);
 
-    // Get current user details (used to fetch the correct user's history)
+    // Get current user details
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
-    // Load history when the component mounts
     useEffect(() => {
-        // Ensure we are in the browser and the user is logged in
         if (typeof window !== 'undefined' && currentUser && currentUser.email) {
-            // The key is unique to the logged-in user's email
             const key = `bookingHistory_${currentUser.email}`;
             const history = JSON.parse(localStorage.getItem(key) || '[]');
             setBookingHistory(history);
         }
-    }, [currentUser]);
+    }, []);
 
-    // --- Access Control Check ---
+    // --- Access Control Check (Clean & Minimal) ---
     if (!currentUser) {
         return (
-            <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
-                <h2 style={{ color: 'red' }}>Access Denied</h2>
-                <p>Please Sign In to view your booking history.</p>
-                <button onClick={() => navigate('/signin')} className="signin-btn" style={{ marginTop: '20px' }}>
-                    Sign In Now
+            <div className="main-content" style={{ textAlign: 'center', paddingTop: '100px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#000', marginBottom: '15px' }}>Access Restricted</h2>
+                <p style={{ color: '#757575', marginBottom: '30px' }}>Please Sign In to view your booking history.</p>
+                <button onClick={() => navigate('/signin')} className="signin-btn">
+                    SIGN IN NOW
                 </button>
             </div>
         );
     }
     
-    // --- Render History ---
+    // UI Styling Tokens
+    const headerTitleStyle = {
+        fontSize: '42px',
+        fontWeight: '800',
+        color: '#000',
+        letterSpacing: '-1.5px',
+        margin: '0 0 10px 0'
+    };
+
+    const bookingItemStyle = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '30px 0',
+        borderBottom: '1px solid #eee', // Soft divider
+        backgroundColor: 'transparent'
+    };
+
     return (
-        <div className="main-content" style={{ maxWidth: '900px' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: '20px 0' }}>
-                Booking History
-            </h1>
-            <p style={{ color: '#666', marginBottom: '20px' }}>
-                Review your past services booked via your account ({currentUser.email}).
-            </p>
+        <div className="main-content" style={{ maxWidth: '900px', margin: '60px auto' }}>
+            {/* Header Section */}
+            <header style={{ borderBottom: '2px solid #000', paddingBottom: '30px', marginBottom: '40px' }}>
+                <h1 style={headerTitleStyle}>Booking History</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ color: '#757575', margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Transactions for {currentUser.email}
+                    </p>
+                    <span style={{ fontWeight: '700', fontSize: '14px' }}>[{bookingHistory.length} ITEMS]</span>
+                </div>
+            </header>
 
             {bookingHistory.length === 0 ? (
-                <div style={{ padding: '50px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '18px', color: '#666' }}>You have no previous bookings yet. Start hiring today!</p>
-                    <button onClick={() => navigate('/')} className="signin-btn" style={{ backgroundColor: '#007bff', marginTop: '20px' }}>
-                        Browse Professionals
+                <div style={{ padding: '80px 0', textAlign: 'center', border: '1px dashed #eee', borderRadius: '8px' }}>
+                    <p style={{ fontSize: '18px', color: '#757575' }}>No previous bookings found in your account.</p>
+                    <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#000', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer', marginTop: '15px' }}>
+                        BROWSE EXPERTS
                     </button>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {/* Display cards in reverse order (newest first) */}
                     {bookingHistory.slice().reverse().map((booking, index) => (
-                        <div key={index} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div key={index} style={bookingItemStyle}>
                             
                             <div style={{ flexGrow: 1 }}>
-                                <p style={{ margin: '0 0 5px', fontSize: '18px', fontWeight: 'bold', color: '#333' }}>{booking.proName} ({booking.service})</p>
-                                <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Date Booked: {booking.date}</p>
+                                <p style={{ margin: '0 0 8px', fontSize: '11px', fontWeight: '600', color: '#757575', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    Date: {booking.date}
+                                </p>
+                                <h3 style={{ margin: '0 0 5px', fontSize: '22px', fontWeight: '700', color: '#000' }}>
+                                    {booking.proName}
+                                </h3>
+                                <p style={{ margin: 0, color: '#757575', fontSize: '15px', fontWeight: '400' }}>
+                                    {booking.service} Specialist
+                                </p>
                             </div>
                             
                             <div style={{ textAlign: 'right' }}>
-                                <p style={{ margin: '0 0 5px', fontSize: '20px', fontWeight: 'bold', color: '#28a745' }}>₹{booking.rate}</p>
-                                <span style={{ backgroundColor: '#e2f0d9', color: '#155724', padding: '5px 10px', borderRadius: '5px', fontSize: '12px', fontWeight: 'bold' }}>
+                                <p style={{ margin: '0 0 10px', fontSize: '24px', fontWeight: '800', color: '#000' }}>
+                                    ₹{booking.rate}
+                                </p>
+                                <span style={{ 
+                                    border: '1px solid #000', 
+                                    color: '#000', 
+                                    padding: '5px 12px', 
+                                    borderRadius: '4px', 
+                                    fontSize: '11px', 
+                                    fontWeight: '700',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}>
                                     {booking.status}
                                 </span>
                             </div>
@@ -71,6 +107,16 @@ const HistoryPage = () => {
                     ))}
                 </div>
             )}
+
+            <footer style={{ marginTop: '80px', textAlign: 'center' }}>
+                <button onClick={() => navigate('/')} style={{ 
+                    background: 'none', border: '1px solid #000', color: '#000', 
+                    padding: '12px 30px', borderRadius: '4px', fontWeight: '600', 
+                    cursor: 'pointer', fontSize: '13px' 
+                }}>
+                    RETURN TO DIRECTORY
+                </button>
+            </footer>
         </div>
     );
 };

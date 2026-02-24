@@ -43,7 +43,7 @@ const ProfessionalDetail = () => {
     };
 
     const handleConfirmBooking = () => {
-        // --- PAYMENT SIMULATION ---
+        // --- PAYMENT SIMULATION & HISTORY SAVE ---
         
         // 1. Create a persistent booking record
         const bookingRecord = {
@@ -53,7 +53,6 @@ const ProfessionalDetail = () => {
             rate: professional.rate,
             date: new Date().toLocaleDateString('en-IN'),
             status: 'Completed',
-            // Use the user's email as the key to store history
             userEmail: currentUser.email, 
         };
 
@@ -110,7 +109,7 @@ const ProfessionalDetail = () => {
                             {professional.profession} Specialist
                         </p>
                         
-                        {/* Skills Tags */}
+                        {/* Skills Tags (Feature Integration) */}
                         <div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {professional.skills && professional.skills.map(skill => (
                                 <span key={skill} style={{ backgroundColor: '#e9f0f9', color: '#007bff', padding: '5px 10px', borderRadius: '5px', fontSize: '14px', fontWeight: '600' }}>

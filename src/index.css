@@ -1,243 +1,237 @@
 /* src/index.css */
 
-/* --- Global Styles --- */
+/* --- 1. Design Tokens & Global Reset --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --white: #ffffff;
+    --black: #121212;
+    --gray-bg: #fcfcfc;    /* Very light gray for subtle contrast */
+    --gray-border: #eeeeee; /* Soft borders */
+    --gray-text: #757575;   /* Secondary text */
+    --gray-hover: #333333;  /* Button hover */
+}
+
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9; 
-    /* The theme transition properties are removed to prevent previous errors */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* --- Header and Navigation --- */
+/* --- 2. Premium Header & Navigation --- */
 .app-header {
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 15px 30px;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--gray-border); /* Thin, soft border instead of shadow */
+    padding: 1.2rem 5%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-.app-title {
-    color: #007bff; 
-    font-size: 24px;
-    font-weight: bold;
-    text-decoration: none;
-}
-.signin-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    transition: background-color 0.3s;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-/* --- Main Layout and Filter Controls --- */
+.app-title {
+    color: var(--black); 
+    font-size: 22px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
+
+.signin-btn, .signin-submit-btn, .hire-btn {
+    background-color: var(--black) !important;
+    color: var(--white) !important;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px; /* Medium rounded corners */
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.signin-btn:hover, .signin-submit-btn:hover, .hire-btn:hover {
+    background-color: var(--gray-hover) !important;
+}
+
+/* --- 3. Main Content & Filter Controls --- */
 .main-content {
     max-width: 1200px;
-    margin: 30px auto;
+    margin: 40px auto;
     padding: 0 20px;
 }
 
-/* 🚀 FINAL FIX: Responsive CSS Grid for Controls */
 .controls-section {
-    /* Switches from flex to grid for robust column layout */
     display: grid; 
-    /* Allows elements to wrap and maintain a minimum width of 180px */
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
     gap: 15px;
-    margin-bottom: 30px;
-    padding: 20px;
-    background-color: white;
+    margin-bottom: 40px;
+    padding: 25px; /* Increased padding for spaciousness */
+    background-color: var(--white);
+    border: 1px solid var(--gray-border); /* Minimal border */
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Ensures the Search Bar and Clear Filters button span multiple columns */
 .search-input-group {
-    grid-column: 1 / -1; /* Spans the entire width of the grid */
+    grid-column: 1 / -1;
 }
 
-/* Style for all Inputs, Selects, and Buttons inside the filter bar */
 .controls-section input, 
 .controls-section select, 
 .controls-section button {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 100%; /* Fill the grid cell */
+    padding: 12px;
+    border: 1px solid var(--gray-border);
+    background-color: var(--white);
+    border-radius: 6px;
+    width: 100%;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: 0.95rem;
 }
 
-/* Add smooth focus transition to inputs */
+/* Active Filter Focus */
 .controls-section input:focus,
 .controls-section select:focus {
     outline: none; 
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    transition: box-shadow 0.3s, border-color 0.3s;
+    border-color: var(--black); /* Black border for active state */
+    transition: border-color 0.2s ease;
 }
 
-/* --- Professional Cards Grid --- */
+/* --- 4. Professional Cards (The Heart of the UI) --- */
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Wider cards */
+    gap: 30px; /* Increased spacing between cards */
 }
+
 .professional-card {
-    background-color: white;
+    background-color: var(--white);
     padding: 0; 
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid var(--gray-border); /* Soft gray border */
     overflow: hidden; 
-    transition: transform 0.2s; 
+    transition: border-color 0.3s ease, transform 0.2s ease;
 }
+
 .professional-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
+    border-color: var(--black); /* Minimal hover effect */
 }
+
 .card-content {
-    padding: 15px;
+    padding: 24px; /* Spacious internal padding */
     text-align: left;
 }
+
+.card-content h3 {
+    font-weight: 700;
+    color: var(--black);
+    margin: 0 0 5px 0;
+}
+
+.card-content .profession-text { /* Assumes you wrap profession in this class */
+    color: var(--gray-text);
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+}
+
 .card-details {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 10px;
-}
-.hire-btn {
-    background-color: #ffc107; 
-    color: #333;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    width: 100%;
-    margin-top: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 15px 0;
+    border-top: 1px solid var(--gray-border);
+    margin-top: 15px;
 }
 
+.card-details p {
+    font-weight: 700; /* Bold black text for Price */
+    margin: 0;
+}
 
-/* --- Other Components (Sign-In, Categories, Modal) --- */
-.signin-page-container {
-    padding-top: 80px;
-    background-color: #f4f4f9;
-    min-height: calc(100vh - 80px); 
-    display: flex;
-    justify-content: center;
+/* Skill Tags as Simple Outlined Chips */
+.skill-tag {
+    display: inline-block;
+    background: transparent !important;
+    border: 1px solid var(--gray-border) !important;
+    color: var(--gray-text) !important;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin: 0 5px 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-.signin-form-box {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-}
-.signin-form-box input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-.signin-submit-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    width: 100%;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
+
+/* --- 5. User Flows & Categories --- */
 .category-section {
-    padding: 30px 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    padding: 40px 20px;
+    background-color: var(--gray-bg);
+    border-bottom: 1px solid var(--gray-border);
+    margin-bottom: 40px;
     text-align: center;
 }
+
 .category-list {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 15px;
     flex-wrap: wrap;
 }
+
 .category-button {
-    display: flex;
-    align-items: center;
-    background-color: #e9f0f9; 
-    color: #007bff;
-    padding: 15px 25px;
-    border: 1px solid #cce0ff;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
+    background-color: var(--white); 
+    color: var(--black);
+    padding: 12px 20px;
+    border: 1px solid var(--gray-border);
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
 }
+
 .category-button:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
+    border-color: var(--black);
+    background-color: var(--white);
 }
-/* --- Modal Styles (Unchanged) --- */
+
+/* --- 6. Form Boxes (Sign-In) --- */
+.signin-form-box {
+    background-color: var(--white);
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-border);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* --- 7. Modal Styles --- */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6); 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.4); /* Softer dimming */
 }
+
 .modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    background: var(--white);
+    padding: 40px;
+    border-radius: 8px;
     max-width: 500px;
-    width: 90%;
-    animation: fadeIn 0.3s ease-out;
+    border: 1px solid var(--black); /* Stronger border for high-end feel */
 }
+
 .summary-box {
-    border: 1px dashed #ccc;
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
+    border: 1px solid var(--gray-border);
+    padding: 20px;
+    background-color: var(--gray-bg);
+    border-radius: 6px;
 }
-.modal-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    gap: 10px;
-}
-.modal-actions button {
-    flex: 1;
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+
+.modal-actions button[style*="background-color: #ccc"] { /* Style for cancel button */
+    background-color: var(--white) !important;
+    border: 1px solid var(--gray-border) !important;
+    color: var(--gray-text) !important;
 }

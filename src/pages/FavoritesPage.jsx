@@ -34,108 +34,129 @@ const FavoritesPage = () => {
         alert("Professional removed from your favorites.");
     };
 
+    // UI DESIGN TOKENS (Internal styles for the Mono Theme)
+    const headerTitleStyle = {
+        fontSize: '42px',
+        fontWeight: '800',
+        color: '#000',
+        letterSpacing: '-1.5px',
+        margin: '0 0 10px 0'
+    };
+
     if (!currentUser) {
         return (
-            <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
-                <h2 style={{ color: 'red' }}>Access Denied</h2>
-                <p>Please Sign In to view your saved favorites.</p>
-                <button onClick={() => navigate('/signin')} className="signin-btn" style={{ marginTop: '20px' }}>
-                    Sign In Now
+            <div className="main-content" style={{ textAlign: 'center', paddingTop: '100px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#000', marginBottom: '15px' }}>Access Restricted</h2>
+                <p style={{ color: '#757575', marginBottom: '30px' }}>Please Sign In to view your saved favorites.</p>
+                <button onClick={() => navigate('/signin')} className="signin-btn">
+                    SIGN IN NOW
                 </button>
             </div>
         );
     }
     
     return (
-        <div className="main-content">
-            <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#333', margin: '20px 0' }}>
-                My Saved Professionals ({favoritedProfessionals.length})
-            </h1>
+        <div className="main-content" style={{ maxWidth: '1200px', margin: '60px auto' }}>
+            {/* Header Section consistent with History Page */}
+            <header style={{ borderBottom: '2px solid #000', paddingBottom: '30px', marginBottom: '50px' }}>
+                <h1 style={headerTitleStyle}>My Favorites</h1>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ color: '#757575', margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Saved Experts for {currentUser.email}
+                    </p>
+                    <span style={{ fontWeight: '700', fontSize: '14px' }}>[{favoritedProfessionals.length} SAVED]</span>
+                </div>
+            </header>
 
             {favoritedProfessionals.length === 0 ? (
-                <p style={{ textAlign: 'center', fontSize: '18px', color: '#666', marginTop: '50px' }}>
-                    You have no saved professionals. Go back to the search page to add some!
-                </p>
+                <div style={{ padding: '80px 0', textAlign: 'center', border: '1px dashed #eee', borderRadius: '8px' }}>
+                    <p style={{ fontSize: '18px', color: '#757575' }}>Your favorites list is currently empty.</p>
+                    <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#000', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer', marginTop: '15px' }}>
+                        EXPLORE SERVICES
+                    </button>
+                </div>
             ) : (
                 <section className="results-grid">
                     {favoritedProfessionals.map(p => (
-                         <div key={p.id} className="professional-card" style={{ position: 'relative' }}>
-                             
-                            {/* 👈 UPDATED REMOVE FAVORITE BUTTON (SVG) */}
+                        <div key={p.id} className="professional-card" style={{ position: 'relative', border: '1px solid #eee' }}>
+                            
+                            {/* REMOVE FAVORITE BUTTON - Minimalist Black Style */}
                             <button 
                                 onClick={() => handleRemoveFavorite(p.id)}
                                 style={{ 
                                     position: 'absolute', 
-                                    top: '10px', 
-                                    right: '10px', 
-                                    background: 'white', 
+                                    top: '15px', 
+                                    right: '15px', 
+                                    background: '#000', 
                                     borderRadius: '50%', 
-                                    width: '40px', 
-                                    height: '40px', 
+                                    width: '32px', 
+                                    height: '32px', 
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    border: '1px solid #ddd', 
+                                    border: 'none', 
                                     cursor: 'pointer', 
                                     zIndex: 10,
                                     boxShadow: '0 2px 5px rgba(0,0,0,0.1)', 
-                                    transition: 'background-color 0.2s, border-color 0.2s',
                                 }}
                                 title="Remove from Favorites"
                             >
-                                <svg 
-                                    xmlns="http://www.w3.org/2000/svg" 
-                                    viewBox="0 0 24 24" 
-                                    fill="#dc3545" // Always red for 'remove' on this page
-                                    width="24px" 
-                                    height="24px"
-                                >
-                                    {/* Using a solid heart for 'removed' state on this page, or a trash can if preferred */}
-                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                </svg>
+                                <span style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>&times;</span>
                             </button>
                             
                             {/* Card Link */}
                             <Link to={`/professional/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <div className="card-content">
+                                <div className="card-content" style={{ padding: '24px' }}>
                                     
-                                    {/* Top Line (Icon, Name, Profession) */}
-                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                                        <span style={{ fontSize: '30px', marginRight: '10px', color: '#007bff' }}>👤</span> 
-                                        <div>
-                                            <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0' }}>{p.name}</h3>
-                                            <p style={{ color: '#007bff', fontWeight: '600', fontSize: '14px', margin: '0' }}>{p.profession}</p>
+                                    {/* Top Line (Avatar Initials, Name, Profession) */}
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                                        <div style={{ 
+                                            width: '45px', 
+                                            height: '45px', 
+                                            backgroundColor: '#000', 
+                                            color: '#fff', 
+                                            borderRadius: '50%', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center', 
+                                            marginRight: '12px', 
+                                            fontSize: '18px',
+                                            fontWeight: '700'
+                                        }}>
+                                            {p.name.charAt(0)}
                                         </div>
-                                        {/* Verified Badge Simulation */}
+                                        <div>
+                                            <h3 style={{ fontSize: '18px', fontWeight: '700', margin: '0', color: '#000' }}>{p.name}</h3>
+                                            <p style={{ color: '#757575', fontWeight: '500', fontSize: '13px', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{p.profession}</p>
+                                        </div>
                                         {p.isVerified && (
-                                            <span title="Verified Professional" style={{ color: '#28a745', marginLeft: '10px', fontSize: '20px' }}>
-                                                ✓
-                                            </span>
+                                            <span style={{ marginLeft: 'auto', color: '#000', fontSize: '18px' }}>✓</span>
                                         )}
                                     </div>
                                     
-                                    {/* Skills Tags */}
-                                    <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                    {/* Skills Tags - Outlined Minimalist Chips */}
+                                    <div style={{ marginBottom: '15px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                         {p.skills.slice(0, 3).map(skill => (
-                                            <span key={skill} style={{ backgroundColor: '#f0f0f0', color: '#555', padding: '3px 8px', borderRadius: '3px', fontSize: '12px' }}>
+                                            <span key={skill} style={{ border: '1px solid #eee', color: '#757575', padding: '3px 10px', borderRadius: '4px', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' }}>
                                                 {skill}
                                             </span>
                                         ))}
                                     </div>
                                     
-                                    <p style={{ color: '#666', fontSize: '14px', marginBottom: '15px' }}>{p.desc}</p>
+                                    <p style={{ color: '#424242', fontSize: '14px', lineHeight: '1.6', height: '44px', overflow: 'hidden', marginBottom: '20px' }}>{p.desc}</p>
 
                                     {/* Details (Rating and Price) */}
-                                    <div className="card-details" style={{ borderTop: '1px solid #eee', borderBottom: '1px solid #eee', padding: '10px 0' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <StarRating rating={p.rating} />
-                                            <p style={{ margin: 0, fontSize: '14px', color: '#333' }}>({p.rating})</p>
+                                    <div className="card-details" style={{ borderTop: '1px solid #f0f0f0', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <span style={{ fontSize: '14px', fontWeight: '700' }}>★ {p.rating}</span>
                                         </div>
-                                        <p style={{ margin: 0 }}>💰 ₹{p.rate}/hr</p> 
+                                        <p style={{ margin: 0, fontWeight: '800', fontSize: '18px', color: '#000' }}>
+                                            ₹{p.rate}<span style={{ fontSize: '12px', fontWeight: '400', color: '#757575' }}> /hr</span>
+                                        </p> 
                                     </div>
                                     
-                                    <button className="hire-btn" style={{ marginTop: '15px', backgroundColor: '#3498db' }}>
-                                        View Profile
+                                    <button className="hire-btn" style={{ marginTop: '20px', width: '100%', padding: '12px', backgroundColor: '#000', color: '#fff', borderRadius: '4px', fontWeight: '700', border: 'none', cursor: 'pointer' }}>
+                                        VIEW PROFILE
                                     </button>
                                 </div>
                             </Link>
